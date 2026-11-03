@@ -21,8 +21,9 @@ On each run, the bot will:
 3. [Grant read access on your repositories](https://support.atlassian.com/bitbucket-cloud/docs/grant-repository-access-to-users-and-groups/) to the renovate-approve-bot account
 4. Optionally, add the renovate-approve-bot account to the default reviewers if you require approval from default reviewers
 5. Set the environment variables:
+   - `BITBUCKET_ACCESS_TOKEN`: [Workspace access token](https://support.atlassian.com/bitbucket-cloud/docs/workspace-access-tokens/) with `pullrequest:write` scope (sent as Bearer). Takes priority over username/password, which are then not needed
    - `BITBUCKET_USERNAME`: Bitbucket username associated with the account used for renovate-approve-bot
-   - `BITBUCKET_PASSWORD`: Bitbucket App password created in step 2
+   - `BITBUCKET_PASSWORD`: Bitbucket App password created in step 2 (app passwords are deprecated; prefer `BITBUCKET_ACCESS_TOKEN`)
    - `BITBUCKET_WORKSPACE`: Bitbucket workspace in which PR's will be searched for and approved
    - `RENOVATE_BOT_USER`: Bitbucket username of your Renovate Bot
 6. Run the bot (on a schedule similarly to Renovate Bot, e.g. as a [Cron](https://en.wikipedia.org/wiki/Cron) job):

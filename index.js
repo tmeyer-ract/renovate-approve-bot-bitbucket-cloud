@@ -4,6 +4,7 @@ const got = require('got');
 const {
   BITBUCKET_USERNAME,
   BITBUCKET_PASSWORD,
+  BITBUCKET_ACCESS_TOKEN,
   BITBUCKET_WORKSPACE,
   RENOVATE_BOT_USER,
   BITBUCKET_REPOSITORIES
@@ -12,15 +13,23 @@ const MANUAL_MERGE_MESSAGE = 'merge this manually';
 const AUTO_MERGE_MESSAGE = '**Automerge**: Enabled.';
 const REPOSITORIES = BITBUCKET_REPOSITORIES ? BITBUCKET_REPOSITORIES.split(/\r?\n/) : undefined;
 
+// Workspace access tokens use Bearer; app passwords / API tokens use Basic
+function authorization() {
+  if (BITBUCKET_ACCESS_TOKEN) {
+    return `Bearer ${BITBUCKET_ACCESS_TOKEN}`;
+  }
+  return `Basic ${Buffer.from(
+    `${BITBUCKET_USERNAME}:${BITBUCKET_PASSWORD}`
+  ).toString('base64')}`;
+}
+
 const DEFAULT_OPTIONS = {
   prefixUrl: 'https://api.bitbucket.org',
   // If we use username/password options, they will be URL encoded
   // https://github.com/sindresorhus/got/issues/1169
   // https://github.com/nodejs/node/issues/31439
   headers: {
-    Authorization: `Basic ${Buffer.from(
-      `${BITBUCKET_USERNAME}:${BITBUCKET_PASSWORD}`
-    ).toString('base64')}`,
+    Authorization: authorization(),
   },
   responseType: 'json',
 };
@@ -91,13 +100,12 @@ function approvePullRequest(prHref) {
 
 async function main() {
   if (
-    !BITBUCKET_USERNAME ||
-    !BITBUCKET_PASSWORD ||
+    !(BITBUCKET_ACCESS_TOKEN || (BITBUCKET_USERNAME && BITBUCKET_PASSWORD)) ||
     !BITBUCKET_WORKSPACE ||
     !RENOVATE_BOT_USER
   ) {
     log.fatal(
-      'At least one of BITBUCKET_USERNAME, BITBUCKET_PASSWORD, BITBUCKET_WORKSPACE, RENOVATE_BOT_USER environement variables is not set.'
+      'BITBUCKET_WORKSPACE and RENOVATE_BOT_USER must be set, plus either BITBUCKET_ACCESS_TOKEN or both BITBUCKET_USERNAME and BITBUCKET_PASSWORD.'
     );
     process.exit(1);
   }
