@@ -256,3 +256,26 @@ describe('approvePullRequest', () => {
     expect(response.statusCode).toBe(409);
   });
 });
+
+describe('authorization', () => {
+  afterEach(() => {
+    bot.__ResetDependency__('BITBUCKET_ACCESS_TOKEN');
+  });
+
+  it('uses basic auth without an access token', () => {
+    const authorization = bot.__get__('authorization');
+
+    expect(authorization()).toBe(
+      `Basic ${Buffer.from(
+        `${BITBUCKET_USERNAME}:${BITBUCKET_PASSWORD}`
+      ).toString('base64')}`
+    );
+  });
+
+  it('uses bearer auth with an access token', () => {
+    bot.__set__('BITBUCKET_ACCESS_TOKEN', 'access-t0ken');
+    const authorization = bot.__get__('authorization');
+
+    expect(authorization()).toBe('Bearer access-t0ken');
+  });
+});
